@@ -249,7 +249,7 @@ def load_imagenet_val(num=None):
     - class_names: dict mapping integer label to class name
     """
     imagenet_fn = os.path.join(
-        os.path.dirname(__file__), "datasets/imagenet_val_25.npz"
+        os.path.dirname(__file__), "datasets/imagenet_val_25.npz" # os.path.dirname(__file__) 获取当前执行的文件的路径，join在一起以获得数据集的绝对路径
     )
     if not os.path.isfile(imagenet_fn):
         print("file %s not found" % imagenet_fn)
@@ -261,11 +261,11 @@ def load_imagenet_val(num=None):
     # modify the default parameters of np.load
     # https://stackoverflow.com/questions/55890813/how-to-fix-object-arrays-cannot-be-loaded-when-allow-pickle-false-for-imdb-loa
     np_load_old = np.load
-    np.load = lambda *a,**k: np_load_old(*a, allow_pickle=True, **k)
+    np.load = lambda *a,**k: np_load_old(*a, allow_pickle=True, **k) # 允许加载pickle序列化的对象，绕过numpy安全限制，以加载包含Python对象的旧格式的文件
     f = np.load(imagenet_fn)
-    np.load = np_load_old
-    X = f["X"]
-    y = f["y"]
+    np.load = np_load_old # 恢复原始版本
+    X = f["X"] # 图片
+    y = f["y"] # 标签
     class_names = f["label_map"].item()
     if num is not None:
         X = X[:num]

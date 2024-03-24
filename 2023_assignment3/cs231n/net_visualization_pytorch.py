@@ -34,10 +34,10 @@ def compute_saliency_maps(X, y, model):
     ##############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    loss = model(X)[range(len(y)), y].sum()
+    loss = model(X)[range(len(y)), y].sum() # 计算每个图像对于正确分类的得分
     loss.backward()
 
-    saliency, _ = X.grad.abs().max(axis=1)
+    saliency, _ = X.grad.abs().max(axis=1) # 从输入X 的梯度 的绝对值 寻找影响最大的颜色通道，形状从(N, 3, H, W)变为(N, H, W)
 
     
 
@@ -139,8 +139,8 @@ def deprocess(img, should_rescale=True):
         T.Lambda(lambda x: x[0]),
         T.Normalize(mean=[0, 0, 0], std=(1.0 / SQUEEZENET_STD).tolist()),
         T.Normalize(mean=(-SQUEEZENET_MEAN).tolist(), std=[1, 1, 1]),
-        T.Lambda(rescale) if should_rescale else T.Lambda(lambda x: x),
-        T.ToPILImage(),
+        T.Lambda(rescale) if should_rescale else T.Lambda(lambda x: x), # 形状从[C, H, W]转换为[1, C, H, W]
+        T.ToPILImage(), # 转回Python Imaging Library格式
     ])
     return transform(img)
 

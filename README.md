@@ -2,6 +2,14 @@
 
 CS231n Spring 2023 assignments solved by Men1scus.
 
+## Environment
+
+```bash
+conda create -n cs231n python=3.7
+conda activate cs231n
+pip install -r requirements.txt
+```
+
 ## References
 
 [lightaime/cs231n](https://github.com/lightaime/cs231n)
