@@ -73,7 +73,7 @@ def rnn_step_forward(x, prev_h, Wx, Wh, b):
     ##############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    next_h = np.tanh(prev_h @ Wh + x @ Wx + b)
+    next_h = np.tanh(x @ Wx + prev_h @ Wh + b)
     cache = next_h, x, prev_h, Wx, Wh
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -199,7 +199,6 @@ def rnn_backward(dh, cache):
     dWx = np.zeros((D, H))
     dWh = np.zeros((H, H))
     db = np.zeros(H)
-
 
     for t in range(T-1, -1, -1):
         dx_t, dh0, dWx_t, dWh_t, db_t = rnn_step_backward(dnext_h=dh[:, t, :] + dh0, cache=cache[t])
@@ -538,7 +537,7 @@ def temporal_softmax_loss(x, y, mask, verbose=False):
     y_flat = y.reshape(N * T)
     mask_flat = mask.reshape(N * T)
 
-    probs = np.exp(x_flat - np.max(x_flat, axis=1, keepdims=True))
+    probs = np.exp(x_flat - np.max(x_flat, axis=1, keepdims=True)) # 增强数据稳定性
     probs /= np.sum(probs, axis=1, keepdims=True)
     loss = -np.sum(mask_flat * np.log(probs[np.arange(N * T), y_flat])) / N
     dx_flat = probs.copy()
