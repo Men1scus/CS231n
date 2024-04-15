@@ -160,6 +160,7 @@ class CaptioningRNN:
         d_captions_in_vectors, d_hidden_state, grads['Wx'], grads['Wh'], grads['b'] = rnn_backward(d_hidden_state_vectors, cache_rnn)
         grads['W_embed'] = word_embedding_backward(d_captions_in_vectors, cache_embed)
         _, grads['W_proj'], grads['b_proj'] = affine_backward(d_hidden_state, cache_proj)
+
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -225,14 +226,16 @@ class CaptioningRNN:
         # you are using an LSTM, initialize the first cell state to zeros.        #
         ###########################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+
         hidden_state, _ = affine_forward(features, W_proj, b_proj)     
         next_word = np.repeat(self._start, N)  
         for t in range(max_length):
-          captions_vectors , _ = word_embedding_forward(next_word, W_embed)
+          captions_vectors, _ = word_embedding_forward(next_word, W_embed)
           hidden_state, _ = rnn_step_forward(captions_vectors, hidden_state, Wx, Wh, b)
           scores, _ = affine_forward(hidden_state, W_vocab, b_vocab)
           next_word = np.argmax(scores, axis=1)
           captions[:, t] = next_word
+
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
         #                             END OF YOUR CODE                             #

@@ -538,7 +538,7 @@ def temporal_softmax_loss(x, y, mask, verbose=False):
     mask_flat = mask.reshape(N * T)
 
     probs = np.exp(x_flat - np.max(x_flat, axis=1, keepdims=True)) # 增强数据稳定性
-    probs /= np.sum(probs, axis=1, keepdims=True)
+    probs /= np.sum(probs, axis=1, keepdims=True) # 归一化，得到概率分布
     loss = -np.sum(mask_flat * np.log(probs[np.arange(N * T), y_flat])) / N
     dx_flat = probs.copy()
     dx_flat[np.arange(N * T), y_flat] -= 1
