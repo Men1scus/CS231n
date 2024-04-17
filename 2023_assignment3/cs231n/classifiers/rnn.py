@@ -148,16 +148,24 @@ class CaptioningRNN:
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         
+        if self.cell_type == "rnn":
+            # If cell type is regular RNN
+            recurrent_forward = rnn_forward
+            recurrent_backward = rnn_backward
+        elif self.cell_type == "lstm":
+            # If cell type is long short-term
+            recurrent_forward = lstm_forward
+            recurrent_backward = lstm_backward
 
         hidden_state, cache_proj = affine_forward(features, W_proj, b_proj)
         captions_in_vectors, cache_embed = word_embedding_forward(captions_in, W_embed)
         
-        hidden_state_vectors, cache_rnn = rnn_forward(captions_in_vectors, hidden_state, Wx, Wh, b)
+        hidden_state_vectors, cache_rnn = recurrent_forward(captions_in_vectors, hidden_state, Wx, Wh, b)
         scores_vocab, cache_vocab= temporal_affine_forward(hidden_state_vectors, W_vocab, b_vocab)
         loss, d_scores_vocab = temporal_softmax_loss(scores_vocab, captions_out, mask)
         
         d_hidden_state_vectors, grads['W_vocab'], grads['b_vocab'] = temporal_affine_backward(d_scores_vocab, cache_vocab)
-        d_captions_in_vectors, d_hidden_state, grads['Wx'], grads['Wh'], grads['b'] = rnn_backward(d_hidden_state_vectors, cache_rnn)
+        d_captions_in_vectors, d_hidden_state, grads['Wx'], grads['Wh'], grads['b'] = recurrent_backward(d_hidden_state_vectors, cache_rnn)
         grads['W_embed'] = word_embedding_backward(d_captions_in_vectors, cache_embed)
         _, grads['W_proj'], grads['b_proj'] = affine_backward(d_hidden_state, cache_proj)
 
@@ -229,9 +237,16 @@ class CaptioningRNN:
 
         hidden_state, _ = affine_forward(features, W_proj, b_proj)     
         next_word = np.repeat(self._start, N)  
+        c = np.zeros_like(hidden_state)
+
         for t in range(max_length):
           captions_vectors, _ = word_embedding_forward(next_word, W_embed)
-          hidden_state, _ = rnn_step_forward(captions_vectors, hidden_state, Wx, Wh, b)
+          
+          if self.cell_type == "rnn":
+              hidden_state, _ = rnn_step_forward(captions_vectors, hidden_state, Wx, Wh, b)
+          elif self.cell_type == "lstm":
+              hidden_state, c, _ = lstm_step_forward(captions_vectors, hidden_state, c, Wx, Wh, b)
+          
           scores, _ = affine_forward(hidden_state, W_vocab, b_vocab)
           next_word = np.argmax(scores, axis=1)
           captions[:, t] = next_word
