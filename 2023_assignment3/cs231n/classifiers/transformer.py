@@ -90,8 +90,17 @@ class CaptioningTransformer(nn.Module):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        embedded_captions = self.embedding(captions)
+        embedded_captions = self.positional_encoding(embedded_captions)
 
+        projected_features = self.visual_projection(features).unsqueeze(1)
+
+        tgt_mask = torch.tril(torch.ones(T, T, device=embedded_captions.device, dtype=embedded_captions.dtype))
+
+        features = self.transformer(tgt=embedded_captions, memory=projected_features, tgt_mask=tgt_mask)
+
+        scores = self.output(features)
+        
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
         #                             END OF YOUR CODE                             #

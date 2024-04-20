@@ -38,7 +38,11 @@ class PositionalEncoding(nn.Module):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        i = torch.arange(max_len)[:, None]
+        pows = torch.pow(10000, -torch.arange(0, embed_dim, 2) / embed_dim)
+
+        pe[0, :, 0::2] = torch.sin(i * pows)
+        pe[0, :, 1::2] = torch.cos(i * pows)
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
@@ -70,7 +74,8 @@ class PositionalEncoding(nn.Module):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        output = x + self.pe[:, :S]
+        output = self.dropout(output)
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
@@ -165,7 +170,22 @@ class MultiHeadAttention(nn.Module):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        H = self.n_head
+        H_dim = self.head_dim
+
+        Q = self.query(query).view(N, S, H, H_dim).transpose(1, 2)
+        K = self.key(key).view(N, T, H, H_dim).transpose(1, 2)
+        V = self.value(value).view(N, T, H, H_dim).transpose(1, 2)
+
+        # (N, H, S, H_dim) @ (N, H, H_dim, T) -> (N, H, S, T)
+        Y = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(H_dim)
+
+        if attn_mask is not None:
+            Y = Y.masked_fill(attn_mask==0, float("-inf"))
+        # (N, H, S, T) @ (N, H, T, H_dim) -> (N, H, S, H_dim)
+        Y = torch.matmul(self.attn_drop(F.softmax(Y, dim=-1)), V)
+
+        output = self.proj(Y.transpose(1, 2).reshape(N, S, E))
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
